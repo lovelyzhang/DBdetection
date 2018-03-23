@@ -1,0 +1,199 @@
+package com.example.dbdetection;
+
+import android.support.v7.app.ActionBarActivity;
+import android.support.v4.app.Fragment;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+
+public class MainActivity extends ActionBarActivity {
+
+	public Button startButton;
+	public TextView dbTextView;
+	public EditText cellPhoneNumber;
+	public EditText maxDBNumber;
+	private String cellPhoneNumberInt = "15501033953";
+	private int maxDBNumberInt = 0;
+	public MyHandler hl;
+	private Boolean isRun = false;
+	private ARThread ar;
+	public Boolean detectionFlag = false;
+	public int aboveCount = 0;
+	private Boolean isCalled = false;
+	private Object objLock = new Object();
+	private int minutes = 10;
+	private AlwaysCall acRun;
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+
+		if (savedInstanceState == null) {
+			getSupportFragmentManager().beginTransaction()
+					.add(R.id.container, new PlaceholderFragment()).commit();
+		}
+		
+		startButton = (Button) findViewById(R.id.StartButton);
+		startButton.setText("开始");
+		dbTextView = (TextView) findViewById(R.id.DBText);
+		cellPhoneNumber = (EditText) findViewById(R.id.CellNo);
+		maxDBNumber = (EditText) findViewById(R.id.MaxDBValue);
+		hl = new MyHandler();
+		
+		startButton.setOnClickListener(new OnClickListener() {			
+			@Override
+			public void onClick(View v) {
+				cellPhoneNumberInt = cellPhoneNumber.getText().toString();	
+				maxDBNumberInt = Integer.parseInt(maxDBNumber.getText().toString()); 
+				if(isRun)
+				{
+					//按下停止按扭 
+					isRun = false;
+					startButton.setText("开始");
+					ar.pause();
+					synchronized(objLock)
+					{
+						isCalled = false;
+					}
+				}
+				else
+				{  
+					//按下开始按扭 
+					isRun = true;
+					ar = new ARThread(hl);	
+					ar.start();
+					startButton.setText("停止");
+					isCalled = false;
+				}
+				// TODO Auto-generated method stub
+							
+			}
+		});		
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.main, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// Handle action bar item clicks here. The action bar will
+		// automatically handle clicks on the Home/Up button, so long
+		// as you specify a parent activity in AndroidManifest.xml.
+		int id = item.getItemId();
+		if (id == R.id.action_settings) {
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
+	/**
+	 * A placeholder fragment containing a simple view.
+	 */
+	public static class PlaceholderFragment extends Fragment {
+
+		public PlaceholderFragment() {
+		}
+
+		@Override
+		public View onCreateView(LayoutInflater inflater, ViewGroup container,
+				Bundle savedInstanceState) {
+			View rootView = inflater.inflate(R.layout.fragment_main, container,
+					false);
+			return rootView;
+		}
+	}
+	
+	class MyHandler extends Handler{
+
+		@Override
+		public void handleMessage(Message msg) {
+			// TODO Auto-generated method stub
+		   super.handleMessage(msg);
+		   switch (msg.what) {
+				case 110:	
+					if(MainActivity.this.detectionFlag == true)
+					{						
+						aboveCount = 0;	
+						MainActivity.this.detectionFlag = false;
+					}
+					break;
+				case 000:
+				       Bundle b = msg.getData();
+				       String dbValue = b.getString("dbValue");
+				       int numberOfDb = Integer.parseInt(dbValue);
+				       if ( numberOfDb > maxDBNumberInt && MainActivity.this.detectionFlag == false)
+				       {
+				    	   this.postDelayed(new ZyTimer(), 5000);
+				    	   MainActivity.this.detectionFlag = true;
+				       }
+				       if ( numberOfDb > maxDBNumberInt && MainActivity.this.detectionFlag == true)
+				       {
+				    	   aboveCount = aboveCount + 1;
+				       }
+				       if(aboveCount > 10 )
+				       {
+				    	   if ( isCalled == false )
+				    	   {
+					    	   Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel://"+cellPhoneNumberInt));
+					    	   startActivity(intent);
+					    	   acRun = new AlwaysCall();
+					    	   this.postDelayed(acRun,minutes * 60 * 1000);
+					    	   isCalled = true;
+				    	   }
+				    	   aboveCount = 0;				    	   
+				       }
+				       MainActivity.this.dbTextView.setText("分贝值：" + dbValue);
+					break;
+				default:
+					break;
+		   }
+		   Log.d("aboveCount",aboveCount+"");
+		}
+	}
+	class AlwaysCall implements Runnable{
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			synchronized(objLock)
+			{
+				if(isCalled == true)
+				{
+			    	   Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel://"+cellPhoneNumberInt));
+			    	   startActivity(intent);
+			    	   hl.postDelayed(this,minutes * 60 * 1000);
+				}
+			}
+			
+		}
+		
+	}
+	class ZyTimer implements Runnable{
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			Message msg = MainActivity.this.hl.obtainMessage(110);
+			MainActivity.this.hl.sendMessage(msg);			
+		}
+		
+	}
+
+}

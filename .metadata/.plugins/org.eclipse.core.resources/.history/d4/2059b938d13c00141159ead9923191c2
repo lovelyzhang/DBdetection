@@ -1,0 +1,88 @@
+<RelativeLayout 
+        xmlns:android="http://schemas.android.com/apk/res/android"
+   		xmlns:tools="http://schemas.android.com/tools"
+    	android:id="@+id/container"
+    	android:layout_width="match_parent"
+    	android:layout_height="match_parent"
+    	tools:context="com.example.dbdetection.MainActivity">
+    	
+     
+     	<TextView 
+     	    android:id="@+id/CellText"
+ 	        android:layout_width="fill_parent"
+        	android:layout_height="wrap_content"
+        	android:text="手机号码：" 
+        	android:textSize="10pt"
+     	    />
+ 	    
+     	<EditText 
+        	android:id="@+id/CellNo"
+ 	        android:layout_width="wrap_content"
+        	android:layout_height="wrap_content"
+        	android:textSize="10pt"
+        	android:layout_below="@id/CellText"
+        	android:maxLength="11"
+        	android:numeric="integer"
+        	android:layout_marginTop="20px"	        
+     	    />
+     	
+     	<TextView 
+     	    android:id="@+id/MaxDBText"
+ 	        android:layout_width="fill_parent"
+        	android:layout_height="wrap_content"
+        	android:text="报警分贝值：" 
+        	android:textSize="10pt"
+        	android:layout_below="@id/CellNo"
+        	android:layout_marginTop="20px"        	
+     	    />
+     	
+     	<EditText 
+        	android:id="@+id/MaxDBValue"
+ 	        android:layout_width="fill_parent"
+        	android:layout_height="wrap_content"
+        	android:textSize="10pt"
+        	android:layout_below="@id/MaxDBText"
+        	android:maxLength="4"
+        	android:numeric="integer"
+	        android:layout_marginTop="20px"
+     	    />
+     	<TextView 
+     	    android:id="@+id/DBNumbers"
+ 	        android:layout_width="wrap_content"
+        	android:layout_height="wrap_content"
+        	android:text="报警时间间隔：" 
+        	android:textSize="10pt"
+        	android:layout_below="@id/MaxDBValue"
+        	android:layout_marginTop="20px"        	
+     	  	/>
+     	     	
+ 	    <NumberPicker
+ 	        android:id="@+id/np"
+ 	        android:layout_width="fill_parent"
+ 	        android:layout_height="wrap_content"
+ 	        android:layout_below="@id/MaxDBValue"
+ 	        android:layout_marginTop="20px"
+ 	        android:layout_toRightOf="@id/DBNumbers" />
+     	
+        <Button
+	        android:id="@+id/StartButton"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:text="Button" 
+	        android:layout_below="@id/np"
+	        android:layout_marginTop="20px"
+        	/>
+
+    	<TextView
+	        android:id="@+id/DBText"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_marginTop="30px"
+	        android:textSize="10pt"
+	        android:text="分贝值：" 
+	        android:gravity="center"
+	        android:layout_below="@id/StartButton"
+        	/>
+    </RelativeLayout>
+
+
